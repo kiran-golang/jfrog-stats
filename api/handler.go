@@ -92,7 +92,7 @@ func (h *handler) getDownloadsHandler(w http.ResponseWriter, r *http.Request) {
 
 // processGetDownloads builds an AQL query to get the desired information
 // from the artifacts' server and returns the relevant information
-func (h *handler) processGetDownloads(repoName string, limit int) ([]DownloadsResponse, error) {
+func (h *handler) processGetDownloads(repoName string, limit int) ([]StatDownloads, error) {
 
 	err := h.initArtifactoryConnection()
 	if err != nil {
@@ -112,6 +112,8 @@ func (h *handler) processGetDownloads(repoName string, limit int) ([]DownloadsRe
 		return nil, pkgerrors.Wrap(err, "Executing AQL query")
 	}
 
+	// We are only interested in the Name and Stats.Downloads fields
+	// from the returned data
 	results := struct {
 		Results []struct {
 			Name  string `json:"name"`
@@ -126,10 +128,10 @@ func (h *handler) processGetDownloads(repoName string, limit int) ([]DownloadsRe
 		return nil, pkgerrors.Wrap(err, "Unmarshaling AQL Results")
 	}
 
-	ret := []DownloadsResponse{}
+	ret := []StatDownloads{}
 
 	for _, artifact := range results.Results {
-		ret = append(ret, DownloadsResponse{
+		ret = append(ret, StatDownloads{
 			RepoName:     repoName,
 			ArtifactName: artifact.Name,
 			Downloads:    artifact.Stats[0].Downloads,

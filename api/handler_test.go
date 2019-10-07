@@ -27,7 +27,7 @@ func TestGetDownloadsHandler(t *testing.T) {
 		mockItems    []byte
 		mockError    error
 		expectedCode int
-		expectedJSON []DownloadsResponse
+		expectedJSON []StatDownloads
 	}{
 		{
 			label:    "Positive test with successful GET",
