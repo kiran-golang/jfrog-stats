@@ -53,6 +53,8 @@ func (h *handler) initArtifactoryConnection() error {
 	return nil
 }
 
+// getDownloadsHandler handles both the queries based request as well as
+// requests where a limit filter is not provided
 func (h *handler) getDownloadsHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
