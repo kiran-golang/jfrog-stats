@@ -6,7 +6,7 @@ export GO111MODULE=on
 all: test build
 
 build: clean
-	GOARCH=amd64 GOOS=$(PLATFORM) go build -mod vendor -o $(BINARY) -v main.go
+	GOARCH=amd64 GOOS=$(PLATFORM) go build -o $(BINARY) -v main.go
 
 clean:
 	go clean

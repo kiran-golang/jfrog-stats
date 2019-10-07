@@ -4,13 +4,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func NewRouter() *mux.Router {
+// NewRouter initializes the API routes
+func NewRouter(h *handler) *mux.Router {
 
-	handler := newHandler()
+	if h == nil {
+		h = &handler{}
+	}
 
 	router := mux.NewRouter().PathPrefix("/v1").Subrouter()
-	router.HandleFunc("/stats/downloads/{repo-name}", handler.getDownloadsHandler).Methods("GET")
-	router.HandleFunc("/stats/downloads/{repo-name}", handler.getDownloadsHandler).
+	router.HandleFunc("/stats/downloads/{repo-name}", h.getDownloadsHandler).Methods("GET")
+	router.HandleFunc("/stats/downloads/{repo-name}", h.getDownloadsHandler).
 		Queries("limit", "{limit}").Methods("GET")
 
 	return router

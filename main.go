@@ -16,7 +16,7 @@ import (
 func main() {
 
 	// Create router for the API URIs supported
-	httpRouter := api.NewRouter()
+	httpRouter := api.NewRouter(nil)
 
 	// Log all the http requests to stdout
 	loggedRouter := handlers.LoggingHandler(os.Stdout, httpRouter)

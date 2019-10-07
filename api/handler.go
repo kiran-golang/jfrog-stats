@@ -16,13 +16,14 @@ import (
 	pkgerrors "github.com/pkg/errors"
 )
 
-type handler struct {
-	rtManager *artifactory.ArtifactoryServicesManager
+// artifactoryServicesManagerInterface exists to allow mocking the manager calls
+// by providing an interface that can be implemented to return static data in tests
+type artifactoryServicesManagerInterface interface {
+	Aql(aql string) ([]byte, error)
 }
 
-// NewHandler creates a handler that supports the typical CRUD operations
-func newHandler() *handler {
-	return &handler{}
+type handler struct {
+	rtManager artifactoryServicesManagerInterface
 }
 
 func (h *handler) initArtifactoryConnection() error {
@@ -57,11 +58,17 @@ func (h *handler) getDownloadsHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	repoName := vars["repo-name"]
 
+	// init limit to default of 2
+	limit := 2
 	limitStr := r.FormValue("limit")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	if limitStr != "" {
+		// Override limit if provided
+		var err error
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 	ret, err := h.processGetDownloads(repoName, limit)
@@ -95,8 +102,6 @@ func (h *handler) processGetDownloads(repoName string, limit int) ([]DownloadsRe
 	.include("stat")
 	.sort({"$desc":["stat.downloads"]})
 	.limit(%d)`, repoName, limit)
-
-	fmt.Println(aqlString)
 
 	data, err := h.rtManager.Aql(aqlString)
 	if err != nil {
