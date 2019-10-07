@@ -13,6 +13,7 @@ func NewRouter(h *handler) *mux.Router {
 
 	router := mux.NewRouter().PathPrefix("/v1").Subrouter()
 	router.HandleFunc("/stats/downloads/{repo-name}", h.getDownloadsHandler).Methods("GET")
+	router.HandleFunc("/healthcheck", h.healthcheckHandler).Methods("GET")
 	/*
 		// Uncomment this later when we need a variable length option for the returned data
 		// Requires modifications in handler to deal with this.

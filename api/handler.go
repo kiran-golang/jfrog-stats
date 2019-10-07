@@ -149,3 +149,10 @@ func (h *handler) processGetDownloads(repoName string) ([]StatDownloads, error) 
 
 	return []StatDownloads{firstObj, secondObj}, nil
 }
+
+// healthCheckHandler just returns a StatusOK when its called
+// indicating that the server is up and able to serve requests
+func (h *handler) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+}
