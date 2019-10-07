@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/kiran-golang/jfrog-stats/config"
 
@@ -55,27 +54,14 @@ func (h *handler) initArtifactoryConnection() error {
 	return nil
 }
 
-// getDownloadsHandler handles both the queries based request as well as
-// requests where a limit filter is not provided
+// getDownloadsHandler handles the GET query for the top 2 downloaded artifacts
+// in a given repo
 func (h *handler) getDownloadsHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	repoName := vars["repo-name"]
 
-	// init limit to default of 2
-	limit := 2
-	limitStr := r.FormValue("limit")
-	if limitStr != "" {
-		// Override limit if provided
-		var err error
-		limit, err = strconv.Atoi(limitStr)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-	}
-
-	ret, err := h.processGetDownloads(repoName, limit)
+	ret, err := h.processGetDownloads(repoName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -92,20 +78,20 @@ func (h *handler) getDownloadsHandler(w http.ResponseWriter, r *http.Request) {
 
 // processGetDownloads builds an AQL query to get the desired information
 // from the artifacts' server and returns the relevant information
-func (h *handler) processGetDownloads(repoName string, limit int) ([]StatDownloads, error) {
+func (h *handler) processGetDownloads(repoName string) ([]StatDownloads, error) {
 
 	err := h.initArtifactoryConnection()
 	if err != nil {
 		return nil, pkgerrors.Wrap(err, "Connecting to Artifactory")
 	}
 
+	// Since sort does not work with included fields
+	// We will manually sort them
 	aqlString := fmt.Sprintf(`items.find(
 		{"repo":"%s"},
 		{"stat.downloads":{"$gte":"1"}}
 	)
-	.include("stat")
-	.sort({"$desc":["stat.downloads"]})
-	.limit(%d)`, repoName, limit)
+	.include("repo", "name", "stat.downloads")`, repoName)
 
 	data, err := h.rtManager.Aql(aqlString)
 	if err != nil {
@@ -128,15 +114,38 @@ func (h *handler) processGetDownloads(repoName string, limit int) ([]StatDownloa
 		return nil, pkgerrors.Wrap(err, "Unmarshaling AQL Results")
 	}
 
-	ret := []StatDownloads{}
+	// Since we are only interested in the top 2 most downloaded items,
+	// We don't need to sort the data. An O(n) algorithm will suffice.
+	first, second := 0, 0
+	var firstObj, secondObj StatDownloads
 
 	for _, artifact := range results.Results {
-		ret = append(ret, StatDownloads{
-			RepoName:     repoName,
-			ArtifactName: artifact.Name,
-			Downloads:    artifact.Stats[0].Downloads,
-		})
+		//Check if this artifact has most downloads
+		if artifact.Stats[0].Downloads > first {
+			//Push first to second before overwriting it
+			second = first
+			secondObj = firstObj
+
+			firstObj = StatDownloads{
+				RepoName:     repoName,
+				ArtifactName: artifact.Name,
+				Downloads:    artifact.Stats[0].Downloads,
+			}
+			first = firstObj.Downloads
+			continue
+		}
+
+		//Check if the downloads are greater than second
+		if artifact.Stats[0].Downloads > second {
+			secondObj = StatDownloads{
+				RepoName:     repoName,
+				ArtifactName: artifact.Name,
+				Downloads:    artifact.Stats[0].Downloads,
+			}
+			second = secondObj.Downloads
+			continue
+		}
 	}
 
-	return ret, nil
+	return []StatDownloads{firstObj, secondObj}, nil
 }
