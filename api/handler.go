@@ -26,6 +26,8 @@ type handler struct {
 	rtManager artifactoryServicesManagerInterface
 }
 
+// initArtifactoryConnection initializes the manager that connects to jfrog
+// artifactory
 func (h *handler) initArtifactoryConnection() error {
 
 	if h.rtManager != nil {
