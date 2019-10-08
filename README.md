@@ -32,6 +32,20 @@ docker start jfrog-stats
 docker logs -f jfrog-stats
 ```
 
+### Run in a Kubernetes Environment
+Helm charts have been provided and they can be used to run the service in Kubernetes.
+
+```bash
+cd deployment/helm
+mkdir manifests
+
+# Create the Kubernetes manifest files. Assume Tiller is not available.
+helm template --namespace testns -n test jfrog-stats --set config.user="admin" --set config.password="eUhCbPG3mK" --output-dir manifests
+
+# Apply the created manifests
+kubectl -n testns apply --recursive -f manifests
+```
+
 ## Configuration
 The application supports the following configuration parameters provided in a config.json file in its WORKDIR
 
