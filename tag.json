@@ -1,0 +1,7 @@
+{
+    "targetRepo" : "TARGETREPO",
+    "dockerRepository" : "jfrog-stats",
+    "tag" : "@",
+    "targetTag" : "latest",
+    "copy": true
+  }
