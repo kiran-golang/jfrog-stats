@@ -39,6 +39,7 @@ spec:
             - mountPath: /opt/jfrog-stats/config.json
               name: {{ include "jfrog-stats.fullname" . }}
               subPath: config.json
+              readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- if .Values.affinity }}
@@ -51,5 +52,5 @@ spec:
           {{- end }}
       volumes:
       - name : {{ include "jfrog-stats.fullname" . }}
-        configMap:
-          name: {{ include "jfrog-stats.fullname" . }}
+        secret:
+          secretName: {{ include "jfrog-stats.fullname" . }}

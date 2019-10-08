@@ -1,6 +1,0 @@
-{
-    "servicePort": {{ .Values.service.internalPort | quote }},
-    "artifactoryURL": {{ .Values.config.artifactoryURL | quote }},
-    "user": {{ .Values.config.user | quote }},
-    "password": {{ .Values.config.password | quote }}
-}
