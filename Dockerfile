@@ -9,7 +9,6 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o jfrog-stats -v main.go
 FROM alpine:3.10
 
 COPY --from=tmp /opt/jfrog-stats/jfrog-stats /opt/jfrog-stats/jfrog-stats
-COPY --from=tmp /opt/jfrog-stats/config.json /opt/jfrog-stats/config.json
 WORKDIR /opt/jfrog-stats/
 
 CMD ["./jfrog-stats"]
