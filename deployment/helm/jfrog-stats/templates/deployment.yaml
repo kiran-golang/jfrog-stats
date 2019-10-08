@@ -29,23 +29,27 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /healthcheck
+              path: /v1/healthcheck
               port: http
           readinessProbe:
             httpGet:
-              path: /healthcheck
+              path: /v1/healthcheck
               port: http
+          volumeMounts:
+            - mountPath: /opt/jfrog-stats/config.json
+              name: {{ include "jfrog-stats.fullname" . }}
+              subPath: config.json
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-    {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
+          {{- if .Values.affinity }}
+          nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 10 }}
+          {{- end }}
+          {{- if .Values.affinity }}
+          affinity:
+{{ toYaml .Values.affinity | indent 10 }}
+          {{- end }}
+      volumes:
+      - name : {{ include "jfrog-stats.fullname" . }}
+        configMap:
+          name: {{ include "jfrog-stats.fullname" . }}

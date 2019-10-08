@@ -5,9 +5,9 @@
 replicaCount: 1
 
 image:
-  repository: jfrog.orbitera/jfrog-stats
+  repository: jfrog-stats
   tag: latest
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 nameOverride: ""
 fullnameOverride: ""
@@ -17,6 +17,11 @@ service:
   nodePort: 30290
   internalPort: 9000
   externalPort: 9000
+
+config:
+  artifactoryURL: "http://34.68.140.218/artifactory/"
+  user: ""
+  password: ""
 
 ingress:
   enabled: false
